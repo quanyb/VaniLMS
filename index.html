@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VniStudy - Mạng xã hội Học tập</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- TOP NAVBAR -->
+    <header class="modern-header no-print">
+        <div class="header-left">
+            <div class="logo"><i class="fa-solid fa-graduation-cap"></i> VniStudy</div>
+        </div>
+        <div class="header-center">
+            <nav class="modern-nav">
+                <button onclick="showPage('home')" title="Trang chủ" class="active"><i class="fa-solid fa-house"></i></button>
+                <button onclick="showPage('courses')" title="Khóa học"><i class="fa-solid fa-book-open"></i></button>
+                <button onclick="showPage('chat')" title="Chat Toàn cầu"><i class="fa-solid fa-earth-asia"></i></button>
+                <button id="nav-admin" onclick="showPage('admin')" title="Quản trị" style="display: none;"><i class="fa-solid fa-shield-halved"></i></button>
+            </nav>
+        </div>
+        <div class="header-right" id="auth-section">
+            <button id="login-btn" class="btn-primary"><i class="fa-brands fa-google"></i> Đăng nhập</button>
+            <div id="user-info" style="display: none;" class="user-profile-menu">
+                <img src="https://ui-avatars.com/api/?name=User&background=random" id="user-avatar" class="avatar-sm" alt="Avatar">
+                <span id="username" style="font-weight: 500; font-size: 0.9rem;"></span>
+                <button id="logout-btn" class="btn-icon" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- 1. BẢNG TIN TOÀN CẦU -->
+        <section id="home" class="page active no-print">
+            <div class="feed-container">
+                <div id="post-form-container" class="modern-card composer" style="display: none;">
+                    <div class="composer-top">
+                        <img src="" class="avatar-sm" id="composer-avatar">
+                        <textarea id="post-content" rows="2" placeholder="Chia sẻ kiến thức với mọi người..."></textarea>
+                    </div>
+                    <div class="composer-bottom">
+                        <div class="upload-btn-wrapper">
+                            <button class="btn-upload"><i class="fa-solid fa-paperclip" style="color: #45bd62;"></i> Đính kèm file</button>
+                            <input type="file" id="post-file" accept="image/*,.pdf,.doc,.docx,.zip">
+                        </div>
+                        <button id="submit-post" class="btn-primary">Đăng bài</button>
+                    </div>
+                    <div id="upload-status" class="status-text" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải file lên...</div>
+                </div>
+                <div id="posts-list"></div>
+            </div>
+        </section>
+
+        <!-- 2. DANH SÁCH KHÓA HỌC -->
+        <section id="courses" class="page no-print">
+            <div class="page-header"><h2>Khóa học của tôi</h2></div>
+            <div id="course-list" class="course-grid"></div>
+        </section>
+
+        <!-- 3. GIAO DIỆN BÊN TRONG 1 KHÓA HỌC -->
+        <section id="course-detail" class="page" style="padding: 0;">
+            <div class="lms-layout modern-card">
+                <!-- MENU TRÁI -->
+                <aside class="lms-sidebar no-print">
+                    <div class="course-brand" id="c-brand-name">Tên Khóa Học</div>
+                    <div class="sidebar-module active" onclick="switchCourseTab('chat', this)"><i class="fa-solid fa-comments"></i> Thảo luận lớp</div>
+                    <div class="sidebar-module" onclick="switchCourseTab('slides', this)"><i class="fa-solid fa-file-powerpoint"></i> Slide bài giảng</div>
+                    <div class="sidebar-module" onclick="switchCourseTab('records', this)"><i class="fa-solid fa-video"></i> Video Record</div>
+                    <div class="sidebar-module" id="tab-students" onclick="switchCourseTab('students', this)"><i class="fa-solid fa-users"></i> Danh sách lớp</div>
+                </aside>
+                
+                <!-- NỘI DUNG PHẢI -->
+                <div class="lms-content">
+                    <!-- TAB: CHAT LỚP HỌC -->
+                    <div id="c-tab-chat" class="c-tab-content active no-print">
+                        <h3 class="module-title">Không gian Thảo luận chung</h3>
+                        <div class="course-chat-container">
+                            <div id="course-chat-box" class="chat-box" style="height: 400px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 15px;"></div>
+                            <div class="course-chat-input modern-card" style="padding: 15px; margin-bottom: 0;">
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <textarea id="c-chat-msg" placeholder="Nhập tin nhắn..." style="margin: 0; min-height: 40px;"></textarea>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="upload-btn-wrapper">
+                                        <button class="btn-icon" style="background: #f0f2f5;"><i class="fa-solid fa-paperclip"></i></button>
+                                        <input type="file" id="c-chat-file">
+                                    </div>
+                                    <div id="c-chat-upload-status" style="display:none; color: var(--success); font-size:0.8rem;">Đang tải...</div>
+                                    <button id="send-course-chat" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Gửi</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: SLIDE -->
+                    <div id="c-tab-slides" class="c-tab-content no-print" style="display: none;">
+                        <h3 class="module-title">Slide bài giảng</h3>
+                        <div id="course-slides-list" class="grid-2">
+                            <div class="modern-card" style="padding: 20px; text-align: center; color: var(--text-muted);">
+                                <i class="fa-solid fa-folder-open fa-3x" style="margin-bottom: 10px;"></i>
+                                <p>Chưa có tài liệu nào được tải lên.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB: VIDEO RECORDS -->
+                    <div id="c-tab-records" class="c-tab-content no-print" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 class="module-title" style="margin: 0;">Video Records</h3>
+                            <button id="btn-show-up-record" class="btn-success" style="display: none;" onclick="document.getElementById('form-up-record').style.display='block'"><i class="fa-solid fa-upload"></i> Up Video</button>
+                        </div>
+                        
+                        <div id="form-up-record" class="modern-card" style="display: none; padding: 15px; margin-bottom: 20px; background: #f8f9fa;">
+                            <input type="text" id="record-title" placeholder="Tên buổi học (VD: Buổi 1 - Giới thiệu)">
+                            <input type="text" id="record-url" placeholder="Link Video (YouTube/Drive...)">
+                            <button id="submit-record" class="btn-primary" style="margin-top: 10px;">Thêm Video</button>
+                        </div>
+
+                        <div id="course-records-list" class="grid-2"></div>
+                    </div>
+
+                    <!-- TAB: DANH SÁCH LỚP HỌC (GIAO DIỆN MỚI ĐẸP HƠN) -->
+                    <div id="c-tab-students" class="c-tab-content print-area" style="display: none;">
+                        <div class="page-header no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                            <h3 class="module-title" style="margin: 0; border: none; padding: 0;">Danh sách lớp học</h3>
+                            <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> In Danh Sách</button>
+                        </div>
+
+                        <!-- Cụm thêm sinh viên: Thiết kế thẻ mềm mại nền xanh nhạt -->
+                        <div id="admin-add-student-area" class="add-student-container no-print modern-card">
+                            <input type="text" id="new-student-email" placeholder="Nhập Gmail học sinh mới...">
+                            <button id="btn-add-student" class="btn-success"><i class="fa-solid fa-user-plus"></i> Thêm</button>
+                        </div>
+
+                        <!-- Bảng danh sách sinh viên: Cấu trúc hiện đại -->
+                        <div class="modern-card" style="overflow-x: auto; padding: 0;">
+                            <table class="student-table modern-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 60px;">STT</th>
+                                        <th>Email Sinh viên</th>
+                                        <th style="width: 160px;">Vai trò</th>
+                                        <th id="th-action" class="no-print text-center" style="width: 120px;">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-table-body">
+                                    <!-- Render JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CHAT TOÀN CẦU -->
+        <section id="chat" class="page no-print">
+            <div class="chat-container modern-card">
+                <div class="chat-header"><h2><i class="fa-brands fa-rocketchat"></i> Chat Toàn Cầu</h2></div>
+                <div id="global-chat-box" class="chat-box"></div>
+                <div class="chat-input-wrapper" style="display: none;" id="global-chat-input-container">
+                    <input type="text" id="global-chat-msg" placeholder="Aa" onkeypress="if(event.key==='Enter') document.getElementById('send-global-chat').click()">
+                    <button id="send-global-chat" class="btn-icon text-primary"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. ADMIN PANEL TỔNG -->
+        <section id="admin" class="page no-print">
+            <div class="page-header"><h2>Bảng điều khiển Quản trị</h2></div>
+            <div class="admin-grid">
+                <div class="modern-card">
+                    <div class="card-header"><h3><i class="fa-solid fa-folder-plus"></i> Tạo Khóa Học Mới</h3></div>
+                    <div class="card-body form-grid">
+                        <input type="text" id="course-title" placeholder="Tên khóa học (VD: Toán rời rạc)">
+                        <input type="text" id="course-code" placeholder="Mã học phần">
+                        <input type="text" id="course-date" placeholder="Thời gian (VD: Bắt đầu 09/01)">
+                        <textarea id="course-emails" rows="2" placeholder="Nhập Gmail cấp quyền (cách bằng dấu phẩy)"></textarea>
+                        <button id="create-course-btn" class="btn-primary w-100"><i class="fa-solid fa-check"></i> Tạo Khóa Học</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
