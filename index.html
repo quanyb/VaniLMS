@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- TOP NAVBAR -->
     <header class="modern-header no-print">
         <div class="header-left">
             <div class="logo"><i class="fa-solid fa-graduation-cap"></i> VniStudy</div>
@@ -19,7 +18,7 @@
                 <button onclick="showPage('home')" title="Trang chủ" class="active"><i class="fa-solid fa-house"></i></button>
                 <button onclick="showPage('courses')" title="Khóa học"><i class="fa-solid fa-book-open"></i></button>
                 <button onclick="showPage('chat')" title="Chat Toàn cầu"><i class="fa-solid fa-earth-asia"></i></button>
-                <button onclick="showPage('settings')" title="Cài đặt"><i class="fa-solid fa-gear"></i></button>
+                <button onclick="showPage('lookup')" title="Tra cứu thông tin"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <button id="nav-admin" onclick="showPage('admin')" title="Quản trị" style="display: none;"><i class="fa-solid fa-shield-halved"></i></button>
             </nav>
         </div>
@@ -27,35 +26,53 @@
             <button id="login-btn" class="btn-primary"><i class="fa-brands fa-google"></i> Đăng nhập</button>
             
             <div id="user-info" style="display: none; align-items: center; gap: 15px;">
-                <!-- CHUÔNG THÔNG BÁO -->
                 <div id="notification-wrapper" style="position: relative;">
                     <button id="notification-btn" class="btn-icon" style="background: #e4e6eb; position: relative;">
                         <i class="fa-solid fa-bell"></i>
                         <span id="notification-count" class="noti-badge" style="display: none;">0</span>
                     </button>
-                    <!-- DROPDOWN MENU THÔNG BÁO -->
                     <div id="notification-dropdown" class="modern-card noti-dropdown" style="display: none;">
                         <div class="noti-header">
                             <h3 style="margin: 0; font-size: 1.3rem;">Thông báo</h3>
-                            <i class="fa-solid fa-ellipsis" style="color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"></i>
                         </div>
-                        <div id="notification-list" class="noti-list">
-                            <!-- JS sẽ render thông báo vào đây -->
-                        </div>
+                        <div id="notification-list" class="noti-list"></div>
                     </div>
                 </div>
 
-                <!-- PROFILE MENU -->
-                <div class="user-profile-menu">
-                    <img src="https://ui-avatars.com/api/?name=User&background=random" id="user-avatar" class="avatar-sm" alt="Avatar">
-                    <span id="username" style="font-weight: 500; font-size: 0.9rem;"></span>
-                    <button id="logout-btn" class="btn-icon" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i></button>
+                <!-- PROFILE MENU (Dropdown khi nhấn vào Avatar) -->
+                <div class="user-profile-menu" style="position: relative;">
+                    <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="toggleProfileMenu()">
+                        <img src="https://ui-avatars.com/api/?name=User&background=random" id="user-avatar" class="avatar-sm" alt="Avatar">
+                        <span id="username" style="font-weight: 500; font-size: 0.9rem;"></span>
+                        <i class="fa-solid fa-caret-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+                    </div>
+                    
+                    <div id="profile-dropdown" class="modern-card noti-dropdown" style="display: none; top: 50px; right: 0; width: 220px;">
+                        <div class="noti-item" onclick="showPage('settings'); toggleProfileMenu();">
+                            <i class="fa-solid fa-gear" style="width: 20px;"></i> Cài đặt tài khoản
+                        </div>
+                        <div class="noti-item" id="logout-btn" style="color: var(--danger);">
+                            <i class="fa-solid fa-right-from-bracket" style="width: 20px;"></i> Đăng xuất
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
     <main class="app-container">
+        <!-- 0. TRANG TRA CỨU THÔNG TIN -->
+        <section id="lookup" class="page no-print">
+            <div class="page-header"><h2>Tra cứu thông tin Sinh viên</h2></div>
+            <div class="modern-card" style="padding: 20px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="search-query" placeholder="Nhập tên hoặc MSSV để tìm kiếm...">
+                    <button class="btn-primary" onclick="searchUsers()"><i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm</button>
+                </div>
+                <div id="search-results" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+        </section>
+
         <!-- 1. BẢNG TIN TOÀN CẦU -->
         <section id="home" class="page active no-print">
             <div class="feed-container">
@@ -65,13 +82,16 @@
                         <textarea id="post-content" rows="2" placeholder="Chia sẻ kiến thức với mọi người..."></textarea>
                     </div>
                     <div class="composer-bottom">
-                        <div class="upload-btn-wrapper">
-                            <button class="btn-upload"><i class="fa-solid fa-paperclip" style="color: #45bd62;"></i> Đính kèm file</button>
-                            <input type="file" id="post-file" accept="image/*,.pdf,.doc,.docx,.zip">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="upload-btn-wrapper">
+                                <button class="btn-upload"><i class="fa-solid fa-paperclip" style="color: #45bd62;"></i> Đính kèm file</button>
+                                <input type="file" id="post-file" accept="image/*,.pdf,.doc,.docx,.zip">
+                            </div>
+                            <span id="post-file-name" style="font-size: 0.85rem; color: var(--text-muted);"></span>
                         </div>
                         <button id="submit-post" class="btn-primary">Đăng bài</button>
                     </div>
-                    <div id="upload-status" class="status-text" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải file lên...</div>
+                    <div id="upload-status" class="status-text" style="display: none; padding-top:10px; color:var(--primary); font-size:0.9rem;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải file lên, vui lòng đợi...</div>
                 </div>
                 <div id="posts-list"></div>
             </div>
@@ -95,6 +115,7 @@
                         </button>
                     </div>
                     <div class="sidebar-module active" onclick="switchCourseTab('announcements', this)"><i class="fa-solid fa-bullhorn"></i> Thông báo</div>
+                    <div class="sidebar-module" onclick="switchCourseTab('assignments', this)"><i class="fa-solid fa-tasks"></i> Bài tập</div>
                     <div class="sidebar-module" onclick="switchCourseTab('chat', this)"><i class="fa-solid fa-comments"></i> Thảo luận lớp</div>
                     <div class="sidebar-module" onclick="switchCourseTab('slides', this)"><i class="fa-solid fa-file-powerpoint"></i> Slide bài giảng</div>
                     <div class="sidebar-module" onclick="switchCourseTab('records', this)"><i class="fa-solid fa-video"></i> Video Record</div>
@@ -103,12 +124,11 @@
                 
                 <!-- NỘI DUNG PHẢI -->
                 <div class="lms-content">
-                    <!-- TAB: THÔNG BÁO TỪ LEADER -->
+                    <!-- TAB: THÔNG BÁO -->
                     <div id="c-tab-announcements" class="c-tab-content active no-print">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h3 class="module-title" style="margin: 0; border:none; padding:0;">Thông báo của lớp</h3>
                         </div>
-                        
                         <div id="form-add-announcement" class="modern-card composer" style="display: none; margin-bottom: 20px;">
                             <div class="composer-top">
                                 <img src="" class="avatar-sm" id="announce-composer-avatar">
@@ -118,8 +138,29 @@
                                 <button id="submit-announcement" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Đăng thông báo</button>
                             </div>
                         </div>
-
                         <div id="course-announcements-list"></div>
+                    </div>
+
+                    <!-- TAB: BÀI TẬP (ASSIGNMENTS) -->
+                    <div id="c-tab-assignments" class="c-tab-content no-print" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 class="module-title" style="margin: 0; border:none; padding:0;">Bài tập (Assignments)</h3>
+                            <button id="btn-show-add-assignment" class="btn-success" style="display: none;" onclick="document.getElementById('form-add-assignment').style.display='block'"><i class="fa-solid fa-plus"></i> Giao bài tập</button>
+                        </div>
+                        <div id="form-add-assignment" class="modern-card" style="display: none; padding: 20px; margin-bottom: 20px; background: #f8f9fa;">
+                            <h4 style="margin-bottom: 15px;">Tạo bài tập mới</h4>
+                            <input type="text" id="assign-title" placeholder="Tiêu đề bài tập..." style="margin-bottom: 10px;">
+                            <textarea id="assign-desc" rows="3" placeholder="Mô tả yêu cầu bài tập..." style="margin-bottom: 10px;"></textarea>
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <div style="flex: 1;"><label style="font-size: 0.85rem; font-weight: 600;">Hạn nộp:</label><input type="datetime-local" id="assign-due" style="background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px; width: 100%; margin-top: 5px;"></div>
+                                <div style="flex: 1;"><label style="font-size: 0.85rem; font-weight: 600;">File đính kèm:</label><input type="file" id="assign-file" style="display: block; margin-top: 5px; font-size: 0.85rem;"></div>
+                            </div>
+                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                <button class="btn-icon" style="background: #e4e6eb; border-radius: 6px; font-size: 0.9rem; padding: 8px 15px;" onclick="document.getElementById('form-add-assignment').style.display='none'">Hủy</button>
+                                <button id="submit-assignment-btn" class="btn-primary">Giao bài</button>
+                            </div>
+                        </div>
+                        <div id="course-assignments-list"></div>
                     </div>
 
                     <!-- TAB: CHAT LỚP HỌC -->
@@ -143,30 +184,22 @@
                         </div>
                     </div>
 
-                    <!-- TAB: SLIDE (TÍNH NĂNG TẠO/ĐĂNG SLIDE) -->
+                    <!-- TAB: SLIDE -->
                     <div id="c-tab-slides" class="c-tab-content no-print" style="display: none;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h3 class="module-title" style="margin: 0; border:none; padding:0;">Slide bài giảng</h3>
                             <button id="btn-show-up-slide" class="btn-success" style="display: none;" onclick="document.getElementById('form-up-slide').style.display='block'"><i class="fa-solid fa-upload"></i> Tải lên Slide</button>
                         </div>
-
-                        <!-- Form tải lên slide -->
                         <div id="form-up-slide" class="modern-card" style="display: none; padding: 15px; margin-bottom: 20px; background: #f8f9fa;">
                             <input type="text" id="slide-title" placeholder="Tiêu đề slide (VD: Chương 1 - Tổng quan)" style="margin-bottom: 10px;">
                             <div class="upload-btn-wrapper" style="margin-bottom: 10px; display: block;">
-                                <button class="btn-upload w-100" style="text-align: center; display: block;"><i class="fa-solid fa-file-pdf"></i> Chọn file Slide (PDF, PPT, DOCX...)</button>
+                                <button class="btn-upload w-100" style="text-align: center; display: block;"><i class="fa-solid fa-file-pdf"></i> Chọn file Slide</button>
                                 <input type="file" id="slide-file-input">
                             </div>
                             <div id="slide-file-name" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Chưa chọn file nào</div>
                             <button id="submit-slide" class="btn-primary w-100">Xác nhận đăng Slide</button>
                         </div>
-
-                        <div id="course-slides-list" class="grid-2">
-                            <div class="modern-card" style="padding: 20px; text-align: center; color: var(--text-muted); grid-column: span 2;">
-                                <i class="fa-solid fa-folder-open fa-3x" style="margin-bottom: 10px;"></i>
-                                <p>Chưa có tài liệu nào được tải lên.</p>
-                            </div>
-                        </div>
+                        <div id="course-slides-list" class="grid-2"></div>
                     </div>
 
                     <!-- TAB: VIDEO RECORDS -->
@@ -175,13 +208,11 @@
                             <h3 class="module-title" style="margin: 0;">Video Records</h3>
                             <button id="btn-show-up-record" class="btn-success" style="display: none;" onclick="document.getElementById('form-up-record').style.display='block'"><i class="fa-solid fa-upload"></i> Up Video</button>
                         </div>
-                        
                         <div id="form-up-record" class="modern-card" style="display: none; padding: 15px; margin-bottom: 20px; background: #f8f9fa;">
                             <input type="text" id="record-title" placeholder="Tên buổi học (VD: Buổi 1 - Giới thiệu)" style="margin-bottom: 10px;">
                             <input type="text" id="record-url" placeholder="Link Video (YouTube/Drive...)" style="margin-bottom: 10px;">
                             <button id="submit-record" class="btn-primary w-100">Thêm Video</button>
                         </div>
-
                         <div id="course-records-list" class="grid-2"></div>
                     </div>
 
@@ -191,18 +222,16 @@
                             <h3 class="module-title" style="margin: 0; border: none; padding: 0;">Danh sách lớp học</h3>
                             <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> In Danh Sách</button>
                         </div>
-
                         <div id="admin-add-student-area" class="add-student-container no-print modern-card" style="display: none;">
                             <input type="text" id="new-student-email" placeholder="Nhập Gmail học sinh mới...">
                             <button id="btn-add-student" class="btn-success"><i class="fa-solid fa-user-plus"></i> Thêm</button>
                         </div>
-
                         <div class="modern-card" style="overflow-x: auto; padding: 0;">
                             <table class="student-table modern-table">
                                 <thead>
                                     <tr>
                                         <th class="text-center" style="width: 60px;">STT</th>
-                                        <th>Email Sinh viên</th>
+                                        <th>Thông tin Sinh viên</th>
                                         <th style="width: 160px;">Vai trò</th>
                                         <th id="th-action" class="no-print text-center" style="width: 120px;">Hành động</th>
                                     </tr>
@@ -220,10 +249,15 @@
             <div class="chat-container modern-card">
                 <div class="chat-header"><h2><i class="fa-brands fa-rocketchat"></i> Chat Toàn Cầu</h2></div>
                 <div id="global-chat-box" class="chat-box"></div>
-                <div class="chat-input-wrapper" style="display: none;" id="global-chat-input-container">
-                    <input type="text" id="global-chat-msg" placeholder="Aa" onkeypress="if(event.key==='Enter') document.getElementById('send-global-chat').click()">
+                <div class="chat-input-wrapper" style="display: none; align-items: center; gap: 10px; padding: 10px 15px; border-top: 1px solid var(--border);" id="global-chat-input-container">
+                    <div class="upload-btn-wrapper">
+                        <button class="btn-icon text-muted"><i class="fa-solid fa-image"></i></button>
+                        <input type="file" id="global-chat-img" accept="image/*">
+                    </div>
+                    <input type="text" id="global-chat-msg" placeholder="Nhập tin nhắn..." style="flex:1;" onkeypress="if(event.key==='Enter') document.getElementById('send-global-chat').click()">
                     <button id="send-global-chat" class="btn-icon text-primary"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
+                <div id="g-chat-img-preview" style="display: none; padding: 5px 15px; font-size: 0.8rem; color: var(--success);">Đã chọn ảnh</div>
             </div>
         </section>
 
@@ -235,25 +269,23 @@
                     <img src="" id="settings-avatar" class="avatar-sm" style="width: 70px; height: 70px;" alt="Avatar">
                     <div>
                         <h3 id="settings-email" style="font-size: 1rem; color: var(--text-muted); font-weight: 500;"></h3>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Quản lý thông tin hiển thị và hồ sơ cá nhân của bạn.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Cập nhật hồ sơ cá nhân của bạn trên hệ thống.</p>
                     </div>
                 </div>
                 
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Tên hiển thị / Biệt danh</label>
-                    <input type="text" id="settings-display-name" placeholder="Nhập biệt danh mới của bạn...">
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px;">Thông tin cá nhân / Mô tả ngắn</label>
-                    <textarea id="settings-bio" rows="3" placeholder="Nhập thông tin cá nhân, lớp, hoặc chuyên ngành của bạn..."></textarea>
-                </div>
-
-                <button id="save-settings-btn" class="btn-primary" style="width: 100%; justify-content: center;">Lưu thay đổi</button>
+                <div class="form-group"><label>Tên của bạn (*)</label><input type="text" id="set-name"></div>
+                <div class="form-group"><label>MSSV (*)</label><input type="text" id="set-mssv"></div>
+                <div class="form-group"><label>Username (*)</label><input type="text" id="set-username"></div>
+                <div class="form-group"><label>Ngày sinh (*)</label><input type="date" id="set-dob" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border);"></div>
+                <div class="form-group"><label>SĐT (*)</label><input type="text" id="set-phone"></div>
+                <div class="form-group"><label>Lớp (*)</label><input type="text" id="set-class"></div>
+                <div class="form-group"><label>Trường/Đại học (*)</label><input type="text" id="set-uni"></div>
+                
+                <button id="save-settings-btn" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 15px;">Lưu thay đổi</button>
             </div>
         </section>
 
-        <!-- 6. ADMIN PANEL TỔNG -->
+        <!-- 6. ADMIN PANEL -->
         <section id="admin" class="page no-print">
             <div class="page-header"><h2>Bảng điều khiển Quản trị</h2></div>
             <div class="admin-grid">
@@ -271,6 +303,28 @@
         </section>
     </main>
 
+    <!-- MODAL ĐĂNG KÝ THÔNG TIN BẮT BUỘC -->
+    <div id="onboarding-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-main); align-items: center; justify-content: center; z-index: 9999;">
+        <div class="modern-card" style="padding: 30px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+            <h2 style="margin-bottom: 20px; color: var(--primary); text-align: center;">Cập nhật thông tin bắt buộc</h2>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px; text-align:center;">Bạn cần hoàn thành hồ sơ trước khi sử dụng hệ thống.</p>
+            
+            <div class="form-group"><label>Tên của bạn (*)</label><input type="text" id="ob-name"></div>
+            <div class="form-group"><label>MSSV (*)</label><input type="text" id="ob-mssv"></div>
+            <div class="form-group"><label>Username (*)</label><input type="text" id="ob-username"></div>
+            <div class="form-group"><label>Ngày sinh (*)</label><input type="date" id="ob-dob" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border);"></div>
+            <div class="form-group"><label>SĐT (*)</label><input type="text" id="ob-phone"></div>
+            <div class="form-group"><label>Lớp (*)</label><input type="text" id="ob-class"></div>
+            <div class="form-group"><label>Trường/Đại học (*)</label><input type="text" id="ob-uni"></div>
+            
+            <div style="margin-top: 15px; display: flex; gap: 10px; align-items: flex-start;">
+                <input type="checkbox" id="ob-agree" style="margin-top: 3px;">
+                <label for="ob-agree" style="font-size: 0.85rem; line-height: 1.4;">Tôi đồng ý với những nhận định trên và cam kết các thông tin khai báo là hoàn toàn chính xác.</label>
+            </div>
+            <button id="ob-submit-btn" class="btn-primary w-100" style="margin-top: 20px; justify-content: center;">Hoàn tất</button>
+        </div>
+    </div>
+
     <!-- MODAL CHỈNH SỬA KHÓA HỌC -->
     <div id="edit-course-modal" class="modal no-print" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
         <div class="modal-content modern-card" style="background: white; padding: 25px; width: 90%; max-width: 500px; border-radius: 12px; max-height: 90vh; overflow-y: auto;">
@@ -278,24 +332,25 @@
                 <h3 style="margin: 0;">Chỉnh sửa Khóa học</h3>
                 <button class="btn-icon" onclick="document.getElementById('edit-course-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div style="margin-bottom: 15px;">
-                <label style="font-weight: 600; display: block; margin-bottom: 5px;">Tên khóa học</label>
-                <input type="text" id="edit-c-title" placeholder="Tên lớp học...">
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label style="font-weight: 600; display: block; margin-bottom: 5px;">Mã học phần</label>
-                <input type="text" id="edit-c-code" placeholder="Ví dụ: IT1110">
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label style="font-weight: 600; display: block; margin-bottom: 5px;">Thời gian bắt đầu</label>
-                <input type="text" id="edit-c-date" placeholder="Ví dụ: Bắt đầu 09/01">
-            </div>
-            <div style="margin-bottom: 20px;">
-                <label style="font-weight: 600; display: block; margin-bottom: 5px;">Hình ảnh khóa học</label>
-                <input type="file" id="edit-c-image" accept="image/*" style="background: transparent; border: 1px solid var(--border); padding: 8px; width: 100%; border-radius: 6px;">
-                <small style="color: var(--text-muted); display: block; margin-top: 5px;">*Bỏ trống nếu muốn giữ nguyên ảnh hiện tại</small>
+            <div class="form-group"><label>Tên khóa học</label><input type="text" id="edit-c-title"></div>
+            <div class="form-group"><label>Mã học phần</label><input type="text" id="edit-c-code"></div>
+            <div class="form-group"><label>Thời gian bắt đầu</label><input type="text" id="edit-c-date"></div>
+            <div class="form-group">
+                <label>Hình ảnh khóa học</label>
+                <input type="file" id="edit-c-image" accept="image/*" style="border:1px solid var(--border); padding:8px; width:100%; border-radius:6px;">
             </div>
             <button id="save-edit-course-btn" class="btn-primary w-100" style="justify-content: center;">Lưu thay đổi</button>
+        </div>
+    </div>
+
+    <!-- MODAL XEM BÀI NỘP CỦA LEADER -->
+    <div id="view-submissions-modal" class="modal no-print" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div class="modal-content modern-card" style="background: white; padding: 25px; width: 90%; max-width: 600px; border-radius: 12px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Danh sách bài nộp</h3>
+                <button class="btn-icon" onclick="document.getElementById('view-submissions-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="submissions-list-container" style="overflow-y: auto; flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 10px;"></div>
         </div>
     </div>
 

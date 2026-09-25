@@ -28,12 +28,16 @@ body { background: var(--bg-main); color: var(--text-main); font-size: 15px; }
 .user-profile-menu { display: flex; align-items: center; gap: 10px; background: var(--hover-overlay); padding: 4px 12px 4px 4px; border-radius: 30px; }
 .avatar-sm { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 
-/* NOTIFICATIONS UI (CHUÔNG & DROPDOWN) */
+/* FORMS */
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); }
+
+/* NOTIFICATIONS UI & DROPDOWNS */
 .noti-badge { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 0.7rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; }
 .noti-dropdown { position: absolute; top: 50px; right: 0; width: 340px; z-index: 1000; padding: 0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid var(--border); }
 .noti-header { padding: 15px 15px 10px 15px; display: flex; justify-content: space-between; align-items: center; }
 .noti-list { max-height: 400px; overflow-y: auto; padding-bottom: 10px; }
-.noti-item { display: flex; gap: 12px; padding: 12px 15px; cursor: pointer; transition: 0.2s; position: relative; }
+.noti-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; cursor: pointer; transition: 0.2s; position: relative; font-weight: 500; font-size: 0.95rem; }
 .noti-item:hover { background: var(--hover-overlay); }
 .noti-avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 500; color: white; flex-shrink: 0; }
 .noti-content { flex: 1; display: flex; flex-direction: column; justify-content: center;}
@@ -49,6 +53,7 @@ body { background: var(--bg-main); color: var(--text-main); font-size: 15px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .w-100 { width: 100%; }
 .text-center { text-align: center !important; }
+.text-muted { color: var(--text-muted); }
 
 /* BUTTONS & INPUTS */
 .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
@@ -57,8 +62,8 @@ body { background: var(--bg-main); color: var(--text-main); font-size: 15px; }
 .btn-danger { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem;}
 .btn-icon { background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; }
 .btn-icon:hover { background: var(--hover-overlay); }
-input[type="text"], textarea, select { width: 100%; padding: 12px 15px; background: #f0f2f5; border: 1px solid transparent; border-radius: var(--radius-md); outline: none; transition: 0.2s; resize: vertical; }
-input[type="text"]:focus, textarea:focus { border-color: var(--primary); background: white; }
+input[type="text"], textarea, select, input[type="datetime-local"] { width: 100%; padding: 12px 15px; background: #f0f2f5; border: 1px solid transparent; border-radius: var(--radius-md); outline: none; transition: 0.2s; resize: vertical; }
+input[type="text"]:focus, textarea:focus, input[type="datetime-local"]:focus { border-color: var(--primary); background: white; }
 
 /* CARDS & FEED POSTS */
 .modern-card { background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05); }
@@ -80,6 +85,12 @@ input[type="text"]:focus, textarea:focus { border-color: var(--primary); backgro
 .btn-action { flex: 1; background: none; border: none; padding: 8px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: var(--radius-sm); }
 .btn-action:hover { background: var(--hover-overlay); }
 
+/* ASSIGNMENT CARDS */
+.assignment-card { border-left: 5px solid var(--primary); padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+.assignment-title { font-size: 1.15rem; font-weight: 600; color: var(--primary); }
+.assignment-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 15px; }
+.assignment-desc { font-size: 0.95rem; line-height: 1.5; padding: 10px; background: #f8f9fa; border-radius: 6px; }
+
 /* COURSE GRID */
 .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 .course-card { display: flex; flex-direction: column; background: var(--card-bg); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid #eee; transition: 0.2s; position: relative;}
@@ -98,7 +109,9 @@ input[type="text"]:focus, textarea:focus { border-color: var(--primary); backgro
 .lms-content { flex: 1; padding: 30px; overflow-y: auto; background: #fff;}
 .module-title { font-size: 1.3rem; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;}
 
-/* CHAT AREA */
+/* CHAT AREA (GLOBAL & COURSE) */
+.chat-container { display: flex; flex-direction: column; height: 80vh; }
+.chat-header { padding: 15px 20px; border-bottom: 1px solid #eee; }
 .chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background: #fff; }
 .chat-message { display: flex; flex-direction: column; max-width: 80%; }
 .chat-message.user { align-self: flex-start; }
@@ -106,9 +119,11 @@ input[type="text"]:focus, textarea:focus { border-color: var(--primary); backgro
 .chat-bubble { padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative;}
 .chat-message.user .chat-bubble { background: #f0f2f5; border-bottom-left-radius: 4px; }
 .chat-message.me .chat-bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+.chat-bubble.deleted { font-style: italic; color: var(--text-muted); background: #f8f9fa !important; border: 1px dashed var(--border); border-radius: 8px;}
 .msg-file { margin-top: 5px; background: rgba(0,0,0,0.05); padding: 5px 10px; border-radius: 8px; font-size: 0.85rem;}
 .chat-message.me .msg-file a { color: white; text-decoration: underline;}
-.btn-del-msg { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.8rem; margin-top: 3px;}
+.chat-img-attachment { max-width: 250px; border-radius: 12px; margin-top: 5px; display: block; border: 1px solid #eee; cursor: pointer; }
+.btn-del-msg { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.75rem; margin-top: 3px;}
 
 /* STUDENT LIST UI */
 .add-student-container { background: #f0f8ff; border: 1px solid #cce5ff; padding: 20px; display: flex; gap: 15px; align-items: center; margin-bottom: 25px; }
@@ -120,7 +135,7 @@ input[type="text"]:focus, textarea:focus { border-color: var(--primary); backgro
 .modern-table th { background: #f8f9fa; font-weight: 600; color: #444; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
 .modern-table tbody tr { transition: background 0.2s; }
 .modern-table tbody tr:hover { background: #fcfcfc; }
-.modern-table td { font-size: 0.95rem; color: #222; }
+.modern-table td { font-size: 0.95rem; color: #222; line-height: 1.4; }
 .badge-leader { background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid #ffeeba; display: inline-flex; align-items: center; gap: 5px;}
 .badge-student { background: #e2e3e5; color: #383d41; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #d6d8db; display: inline-flex; align-items: center; gap: 5px;}
 
