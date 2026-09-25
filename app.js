@@ -1,21 +1,20 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, where, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, getDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
+// Đã xóa import firebase-storage
 
 const firebaseConfig = {
     apiKey: "AIzaSyC5-lQjrxIUjW9bqbr9UHD4s4fIsCvF6iw",
     authDomain: "vanilms.firebaseapp.com",
     projectId: "vanilms",
-    storageBucket: "vanilms.firebasestorage.app",
     messagingSenderId: "269688828853",
     appId: "1:269688828853:web:9a333301de72cd2f401ffc"
+    // Đã xóa storageBucket
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app); 
 
 let currentUser = null;
 const ADMIN_EMAIL = "nguyennhatquanyb@gmail.com"; 
@@ -29,6 +28,43 @@ let unsubscribeCourseSlides = null;
 let unsubscribeCurrentCourseInfo = null;
 
 let allUsersCache = {}; 
+
+// ==========================================
+// CẤU HÌNH API GOOGLE DRIVE (GAS)
+// ==========================================
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzVJFtxfpVRXZz7Wf1zyhW_srGJFcI2sqSI-G7pdKAEKn-rsYyGyCld2LoBO477fbXB/exec";
+
+const getBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+});
+
+async function uploadFileToDrive(file) {
+    try {
+        const base64Data = await getBase64(file);
+        const payload = {
+            fileName: `${Date.now()}_${file.name}`,
+            mimeType: file.type,
+            base64: base64Data
+        };
+        const response = await fetch(GAS_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.status === "success") {
+            return result.url; 
+        } else {
+            console.error("Lỗi từ Drive:", result.message);
+            return null;
+        }
+    } catch (error) {
+        console.error("Lỗi kết nối API Drive:", error);
+        return null;
+    }
+}
 
 // ==========================================
 // UTILS 
@@ -115,7 +151,6 @@ function loadUserApp(user, userData) {
     document.getElementById('user-info').style.display = 'flex';
     document.getElementById('username').textContent = userData.name || user.displayName || "Người dùng";
     
-    // Fill Settings Data
     document.getElementById('set-name').value = userData.name || "";
     document.getElementById('set-mssv').value = userData.mssv || "";
     document.getElementById('set-username').value = userData.username || "";
@@ -488,10 +523,8 @@ document.getElementById('submit-assignment-btn').addEventListener('click', async
     let fileUrl = null;
     try {
         if(fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const sRef = ref(storage, `assignments/${Date.now()}_${file.name}`);
-            await uploadBytes(sRef, file);
-            fileUrl = await getDownloadURL(sRef);
+            fileUrl = await uploadFileToDrive(fileInput.files[0]);
+            if (!fileUrl) throw new Error("Upload bài tập thất bại");
         }
         await addDoc(collection(db, "course_assignments"), {
             courseId: currentCourseId, title, desc, dueDate: due, fileUrl,
@@ -518,10 +551,8 @@ window.submitAssignment = async (assignId) => {
     let fileUrl = null;
     try {
         if(fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const sRef = ref(storage, `submissions/${assignId}_${currentUser.uid}_${file.name}`);
-            await uploadBytes(sRef, file);
-            fileUrl = await getDownloadURL(sRef);
+            fileUrl = await uploadFileToDrive(fileInput.files[0]);
+            if (!fileUrl) throw new Error("Upload bài nộp thất bại");
         }
         await addDoc(collection(db, "course_submissions"), {
             assignmentId: assignId, courseId: currentCourseId, uid: currentUser.uid,
@@ -594,7 +625,10 @@ document.getElementById('save-edit-course-btn').addEventListener('click', async 
     saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải...';
     let updateData = { title: newTitle, code: newCode, date: newDate };
     try {
-        if (fileInput.files.length > 0) { const file = fileInput.files[0]; const sRef = ref(storage, 'course_images/' + Date.now() + '_' + file.name); await uploadBytes(sRef, file); updateData.imageUrl = await getDownloadURL(sRef); }
+        if (fileInput.files.length > 0) { 
+            const imgUrl = await uploadFileToDrive(fileInput.files[0]);
+            if (imgUrl) updateData.imageUrl = imgUrl; 
+        }
         await updateDoc(doc(db, "courses", currentCourseId), updateData); alert("Cập nhật thông tin thành công!"); document.getElementById('edit-course-modal').style.display = 'none';
     } catch (error) { alert("Có lỗi xảy ra, vui lòng thử lại!"); } finally { saveBtn.disabled = false; saveBtn.textContent = "Lưu thay đổi"; fileInput.value = ''; }
 });
@@ -625,13 +659,11 @@ async function renderStudentTable(courseId, emails, leaders, canEdit) {
         if (canEdit) {
             let actionBtn = '';
             
-            // 1. CHỈ ADMIN mới có nút Phong/Giáng Leader
             if (isAdmin) {
                 actionBtn = isLd ? `<button class="btn-icon" title="Hủy Leader" onclick="toggleLeader('${courseId}','${email}', false)"><i class="fa-solid fa-arrow-down" style="color:var(--warning)"></i></button>` 
                                  : `<button class="btn-icon" title="Cấp quyền Leader" onclick="toggleLeader('${courseId}','${email}', true)"><i class="fa-solid fa-crown" style="color:var(--warning)"></i></button>`;
             }
             
-            // 2. LEADER có thể kick học viên thường (nhưng KHÔNG ĐƯỢC kick Admin hoặc Leader khác)
             let kickBtn = '';
             if (isAdmin || !isLd) {
                 kickBtn = `<button class="btn-icon" title="Đuổi khỏi lớp" onclick="kickStudent('${courseId}','${email}')"><i class="fa-solid fa-user-minus" style="color:var(--danger)"></i></button>`;
@@ -648,7 +680,6 @@ document.getElementById('btn-add-student').addEventListener('click', async () =>
 
 window.kickStudent = async (cId, email) => { if(confirm(`Xóa ${email} khỏi lớp?`)) { await updateDoc(doc(db, "courses", cId), { allowedEmails: arrayRemove(email), leaders: arrayRemove(email) }); } };
 
-// Khóa bảo mật cấp 2: Chặn trực tiếp từ Server-side logic (ngăn gọi hàm từ F12)
 window.toggleLeader = async (cId, email, makeLeader) => { 
     if (currentUser.email !== ADMIN_EMAIL) {
         return alert("Lỗi quyền truy cập: Chỉ Admin hệ thống mới có thể chỉ định hoặc hủy Leader!");
@@ -664,18 +695,37 @@ window.toggleLeader = async (cId, email, makeLeader) => {
 document.getElementById('submit-slide').addEventListener('click', async () => {
     const title = document.getElementById('slide-title').value; const fileInput = document.getElementById('slide-file-input');
     if(!title || fileInput.files.length === 0) return alert("Vui lòng nhập tiêu đề và chọn file slide!");
-    const file = fileInput.files[0]; const sRef = ref(storage, 'course_slides/' + Date.now() + '_' + file.name); alert("Đang tải file slide lên hệ thống...");
-    await uploadBytes(sRef, file); const fileUrl = await getDownloadURL(sRef); await addDoc(collection(db, "course_slides"), { courseId: currentCourseId, title: title, fileName: file.name, url: fileUrl, createdAt: serverTimestamp() });
-    document.getElementById('slide-title').value = ''; fileInput.value = ''; document.getElementById('slide-file-name').innerText = 'Chưa chọn file nào'; document.getElementById('form-up-slide').style.display = 'none'; alert("Đăng slide thành công!");
+    
+    alert("Đang tải file slide lên hệ thống Drive...");
+    const file = fileInput.files[0];
+    const fileUrl = await uploadFileToDrive(file);
+    
+    if (fileUrl) {
+        await addDoc(collection(db, "course_slides"), { courseId: currentCourseId, title: title, fileName: file.name, url: fileUrl, createdAt: serverTimestamp() });
+        document.getElementById('slide-title').value = ''; fileInput.value = ''; document.getElementById('slide-file-name').innerText = 'Chưa chọn file nào'; document.getElementById('form-up-slide').style.display = 'none'; alert("Đăng slide thành công!");
+    } else {
+        alert("Lỗi upload slide!");
+    }
 });
 window.delSlide = async (id) => { if(confirm("Xóa slide này?")) await deleteDoc(doc(db, "course_slides", id)); };
 
 document.getElementById('send-course-chat').addEventListener('click', async () => {
     const text = document.getElementById('c-chat-msg').value; const fileInput = document.getElementById('c-chat-file'); const status = document.getElementById('c-chat-upload-status'); const btn = document.getElementById('send-course-chat');
     if(!text.trim() && fileInput.files.length === 0) return; btn.disabled = true; let fileUrl = null, fileName = null;
-    if (fileInput.files.length > 0) { status.style.display = 'block'; const file = fileInput.files[0]; fileName = file.name; const sRef = ref(storage, 'course_files/' + Date.now() + '_' + file.name); await uploadBytes(sRef, file); fileUrl = await getDownloadURL(sRef); }
-    await addDoc(collection(db, "course_chats"), { courseId: currentCourseId, text, fileUrl, fileName, uid: currentUser.uid, name: currentUser.displayName, photoURL: currentUser.photoURL, createdAt: serverTimestamp() });
-    document.getElementById('c-chat-msg').value = ''; fileInput.value = ''; status.style.display = 'none'; btn.disabled = false;
+    
+    try {
+        if (fileInput.files.length > 0) { 
+            status.style.display = 'block'; 
+            const file = fileInput.files[0]; fileName = file.name; 
+            fileUrl = await uploadFileToDrive(file);
+        }
+        await addDoc(collection(db, "course_chats"), { courseId: currentCourseId, text, fileUrl, fileName, uid: currentUser.uid, name: currentUser.displayName, photoURL: currentUser.photoURL, createdAt: serverTimestamp() });
+        document.getElementById('c-chat-msg').value = ''; fileInput.value = ''; status.style.display = 'none'; 
+    } catch(err) {
+        console.error("Lỗi chat:", err);
+    } finally {
+        btn.disabled = false;
+    }
 });
 window.delCourseMsg = async (id) => { if(confirm("Gỡ tin nhắn này?")) await deleteDoc(doc(db, "course_chats", id)); };
 
@@ -687,7 +737,7 @@ document.getElementById('submit-record').addEventListener('click', async () => {
 window.delRecord = async (id) => { if(confirm("Xóa video này?")) await deleteDoc(doc(db, "course_records", id)); };
 
 // ==========================================
-// BẢNG TIN TOÀN CẦU (POSTS) FIX LỖI UPLOAD FILE
+// BẢNG TIN TOÀN CẦU (POSTS) TÍCH HỢP DRIVE
 // ==========================================
 document.getElementById('post-file').addEventListener('change', function(e) {
     if(e.target.files.length > 0) { document.getElementById('post-file-name').innerText = e.target.files[0].name; } 
@@ -704,16 +754,16 @@ submitPostBtn.addEventListener('click', async () => {
     submitPostBtn.disabled = true; let fileUrl = null, fileName = null;
     try {
         if (fileInput.files.length > 0) {
-            uploadStatus.style.display = 'block'; const file = fileInput.files[0]; fileName = file.name;
-            const storageRef = ref(storage, 'posts/' + Date.now() + '_' + file.name);
-            await uploadBytes(storageRef, file); fileUrl = await getDownloadURL(storageRef);
+            uploadStatus.style.display = 'block'; 
+            const file = fileInput.files[0]; fileName = file.name;
+            fileUrl = await uploadFileToDrive(file);
         }
         await addDoc(collection(db, "posts"), { 
             text, fileUrl, fileName, uid: currentUser.uid, name: currentUser.displayName, photoURL: currentUser.photoURL, 
             likes: [], comments: [], createdAt: serverTimestamp() 
         });
         document.getElementById('post-content').value = ''; fileInput.value = ''; document.getElementById('post-file-name').innerText = '';
-    } catch (e) { console.error(e); alert("Lỗi tải bài viết hoặc file! Hãy kiểm tra Storage Rules.");
+    } catch (e) { console.error(e); alert("Lỗi tải bài viết hoặc file!");
     } finally { uploadStatus.style.display = 'none'; submitPostBtn.disabled = false; }
 });
 
@@ -744,7 +794,7 @@ window.toggleLike = async (postId, isLiked) => { if (!currentUser) return alert(
 window.addComment = async (postId) => { if (!currentUser) return alert("Vui lòng đăng nhập!"); const input = document.getElementById(`cmt-input-${postId}`); if (!input || !input.value.trim()) return; try { await updateDoc(doc(db, "posts", postId), { comments: arrayUnion({ uid: currentUser.uid, name: currentUser.displayName, photoURL: currentUser.photoURL || "", text: input.value.trim(), time: Date.now() }) }); input.value = ''; } catch (error) { console.error(error); }};
 
 // ==========================================
-// CHAT TOÀN CẦU (GLOBAL CHAT) - ẢNH & THU HỒI
+// CHAT TOÀN CẦU (GLOBAL CHAT) TÍCH HỢP DRIVE
 // ==========================================
 document.getElementById('global-chat-img').addEventListener('change', function(e) {
     const preview = document.getElementById('g-chat-img-preview');
@@ -762,10 +812,7 @@ document.getElementById('send-global-chat').addEventListener('click', async () =
 
     try {
         if(fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const sRef = ref(storage, 'global_chat_img/' + Date.now() + '_' + file.name);
-            await uploadBytes(sRef, file);
-            imgUrl = await getDownloadURL(sRef);
+            imgUrl = await uploadFileToDrive(fileInput.files[0]);
         }
         await addDoc(collection(db, "chats"), { 
             text: chatMsg.value, imageUrl: imgUrl, 
