@@ -28,6 +28,19 @@ body { background: var(--bg-main); color: var(--text-main); font-size: 15px; }
 .user-profile-menu { display: flex; align-items: center; gap: 10px; background: var(--hover-overlay); padding: 4px 12px 4px 4px; border-radius: 30px; }
 .avatar-sm { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 
+/* NOTIFICATIONS UI (CHUÔNG & DROPDOWN) */
+.noti-badge { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 0.7rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; }
+.noti-dropdown { position: absolute; top: 50px; right: 0; width: 340px; z-index: 1000; padding: 0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid var(--border); }
+.noti-header { padding: 15px 15px 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+.noti-list { max-height: 400px; overflow-y: auto; padding-bottom: 10px; }
+.noti-item { display: flex; gap: 12px; padding: 12px 15px; cursor: pointer; transition: 0.2s; position: relative; }
+.noti-item:hover { background: var(--hover-overlay); }
+.noti-avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 500; color: white; flex-shrink: 0; }
+.noti-content { flex: 1; display: flex; flex-direction: column; justify-content: center;}
+.noti-text { font-weight: 500; margin-bottom: 4px; font-size: 0.95rem; line-height: 1.3;}
+.noti-time { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+.noti-unread-dot { width: 12px; height: 12px; background: var(--primary); border-radius: 50%; align-self: center; }
+
 /* UTILS */
 .app-container { max-width: 960px; margin: 25px auto; padding: 0 15px; }
 .page { display: none; animation: fadeIn 0.3s; }
@@ -47,10 +60,8 @@ body { background: var(--bg-main); color: var(--text-main); font-size: 15px; }
 input[type="text"], textarea, select { width: 100%; padding: 12px 15px; background: #f0f2f5; border: 1px solid transparent; border-radius: var(--radius-md); outline: none; transition: 0.2s; resize: vertical; }
 input[type="text"]:focus, textarea:focus { border-color: var(--primary); background: white; }
 
-/* CARDS */
+/* CARDS & FEED POSTS */
 .modern-card { background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05); }
-
-/* FEED POSTS */
 .feed-container { max-width: 680px; margin: 0 auto; }
 .composer { padding: 15px; }
 .composer-top { display: flex; gap: 10px; margin-bottom: 10px; }
@@ -99,19 +110,17 @@ input[type="text"]:focus, textarea:focus { border-color: var(--primary); backgro
 .chat-message.me .msg-file a { color: white; text-decoration: underline;}
 .btn-del-msg { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.8rem; margin-top: 3px;}
 
-/* STUDENT LIST UI (THIẾT KẾ MỚI) */
+/* STUDENT LIST UI */
 .add-student-container { background: #f0f8ff; border: 1px solid #cce5ff; padding: 20px; display: flex; gap: 15px; align-items: center; margin-bottom: 25px; }
 .add-student-container input { background: #fff; border: 1px solid #b8daff; margin: 0; flex: 1; }
 .add-student-container input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(24,119,242,0.1); }
 .add-student-container .btn-success { margin: 0; padding: 12px 25px; font-size: 1rem; }
-
 .modern-table { width: 100%; border-collapse: collapse; }
 .modern-table th, .modern-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid #eee; }
 .modern-table th { background: #f8f9fa; font-weight: 600; color: #444; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
 .modern-table tbody tr { transition: background 0.2s; }
 .modern-table tbody tr:hover { background: #fcfcfc; }
 .modern-table td { font-size: 0.95rem; color: #222; }
-
 .badge-leader { background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; border: 1px solid #ffeeba; display: inline-flex; align-items: center; gap: 5px;}
 .badge-student { background: #e2e3e5; color: #383d41; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid #d6d8db; display: inline-flex; align-items: center; gap: 5px;}
 
